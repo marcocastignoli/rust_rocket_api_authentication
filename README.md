@@ -10,7 +10,7 @@ An example of API written in Rust with the rocket.rs framework, with a JWT Authe
 
 1. First run the migration
     ```bash
-    disesel migratation run
+    disesel migration run
     ```
 2. Compile the code setting the DATABASE_URL environment variable
     ```bash
