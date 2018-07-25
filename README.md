@@ -1,64 +1,46 @@
-# Rocket, Diesel, MySQL, Rest API Tutorial
+# Rust rocket.rs - API with Authentication
 
-Build Restful CRUD API for a managing heroes within our Database using Rocket and Diesel.
+An example of API written in Rust with the rocket.rs framework, with a JWT Authentication 
 
 ## Requirements
 
-1. Rust and Cargo - 1.26.0 (nightly)
+1. Configure Rust to satisfy rocket.rs dependencies
 
-2. Diesel CLI - 1.1.0
+## Installation
 
-2. Mysql - 5.x.x
+1. First run the migration
+    ```bash
+    disesel migratation run
+    ```
+2. Compile the code setting the DATABASE_URL environment variable
+    ```bash
+        export DATABASE_URL=mysql://username:password@localhost/heroes && cargo run
+    ```
 
-## Steps to Setup
+## API
 
-**1. Clone the application**
-
+### /auth/login
+Get a jwt token for the user marcocastignoli
 ```bash
-git clone https://github.com/sean3z/rocket-diesel-rest-api-example.git
+curl -X POST \
+  http://localhost:8000/auth/login \
+  -H 'cache-control: no-cache' \
+  -H 'content-type: application/json' \
+  -H 'postman-token: 8c94f7d5-a1a8-8599-7d20-11138a4d8c7d' \
+  -d '{
+	"username": "marcocastignoli",
+	"password": "12345"
+}'
 ```
-
-**2. Create DATABASE_URL environment variable**
-```
-export DATABASE_URL=mysql://user:pass@localhost/heroes
-```
-
-**3. Run Database migration**
+### /user
+Call a protected route (use the token returned from the /auth/login API)
 ```bash
-disesel migratation run
+curl -X GET \
+  http://localhost:8000/user \
+  -H 'authentication: eyJ0eXAiOiJKV1QiLCJraWQiOm51bGwsImFsZyI6IkhTMjU2In0.eyJpc3MiOm51bGwsInN1YiI6Im1hcmNvY2FzdGlnbm9saSIsImF1ZCI6bnVsbCwiZXhwIjpudWxsLCJuYmYiOm51bGwsImlhdCI6bnVsbCwianRpIjpudWxsfQ.fnp0D8Qh1bTFv1zKTVGAxwjtyTCOqKuarRzBQabjiCI' \
+  -H 'cache-control: no-cache' \
+  -H 'postman-token: b10e0928-9316-eb1b-3675-988f6554d236'
 ```
 
-**4. Build and run the app using cargo**
-
-```bash
-cargo build --release && cd target/release/
-sudo ROCKET_ENV=prod ./hero-api
-```
-
-The app will start running at <http://localhost:80>.
-
-Alternatively, you can run the app in development mode -
-
-```bash
-cargo run
-```
-
-## Explore Rest APIs
-
-The app defines following CRUD APIs.
-
-    GET /heroes
-    
-    POST /hero
-    
-    PUT /hero/{heroId}
-    
-    DELETE /hero/{heroId}
-
-You can test them using postman or any other rest client.
-
-## Learn more
-
-You can find the tutorial for this application on my blog -
-
-<https://medium.com/p/1867308352d8/>
+## Thanks
+Special thanks to @sean3z for this repo https://github.com/sean3z/rocket-diesel-rest-api-example and this tutorial https://medium.com/sean3z/building-a-restful-crud-api-with-rust-1867308352d8
