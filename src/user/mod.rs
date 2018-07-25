@@ -72,10 +72,9 @@ fn login(credentials: Json<Credentials>, connection: db::Connection) ->  Json<Va
     let username = credentials.username.to_string();
     let password = credentials.password.to_string();
     
-    let user: User = User::byUsernameAndPassword(username, password, &connection);
-    match user.id {
+    match User::byUsernameAndPassword(username, password, &connection) {
         None => { Json(json!({"success": false})) },
-        Some(id) => {
+        Some(user) => {
             let claims = Registered {
                 sub: Some(user.name.into()),
                 ..Default::default()

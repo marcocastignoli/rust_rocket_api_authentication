@@ -29,20 +29,16 @@ impl User {
         }
     }
 
-    pub fn byUsernameAndPassword(username_: String, password_: String, connection: &MysqlConnection) -> User {
+    pub fn byUsernameAndPassword(username_: String, password_: String, connection: &MysqlConnection) -> Option<User> {
         let res = users::table
             .filter(users::name.eq(username_))
             .filter(users::password.eq(password_))
             .order(users::id)
             .first(connection);
         match res {
-            Ok(user) => user,
+            Ok(user) => Some(user),
             Err(err) => {
-                User {
-                    id: None,
-                    name: String::from(""),
-                    password: String::from("")
-                }
+                None
             }
         }
     }
