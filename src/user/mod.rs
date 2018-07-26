@@ -20,6 +20,26 @@ fn create(user: Json<User>, connection: db::Connection) -> Json<User> {
     Json(User::create(insert, &connection))
 }
 
+#[get("/info")]
+fn info(key: ApiKey, connection: db::Connection) -> Json<Value> {
+    Json(json!(
+        {
+            "success": true,
+            "message": key.0
+        }
+    ))
+}
+
+#[get("/info", rank = 2)]
+fn info_error() -> Json<Value> {
+    Json(json!(
+        {
+            "success": false,
+            "message": "Not authorized"
+        }
+    ))
+}
+
 #[get("/")]
 fn read(key: ApiKey, connection: db::Connection) -> Json<Value> {
     Json(json!(User::read(0, &connection)))
@@ -92,6 +112,6 @@ fn login(credentials: Json<Credentials>, connection: db::Connection) ->  Json<Va
 
 pub fn mount(rocket: rocket::Rocket) -> rocket::Rocket {
     rocket
-        .mount("/user", routes![read, read_error, read_one, create, update, delete])
+        .mount("/user", routes![read, read_error, read_one, create, update, delete, info, info_error])
         .mount("/auth", routes![login])
 }

@@ -18,12 +18,12 @@ use self::jwt::{
 
 pub struct ApiKey(pub String);
 
-pub fn is_valid(key: &str) -> String {
+pub fn read_token(key: &str) -> Result<String, String> {
     let token = Token::<Header, Registered>::parse(key).unwrap();
     if(token.verify(b"secret_key", Sha256::new())){
-        token.claims.sub.unwrap()
+        Ok(token.claims.sub.unwrap())
     } else {
-        "0".to_string()
+        Err("Token not valid".to_string())
     }
 }
 
@@ -35,16 +35,9 @@ impl<'a, 'r> FromRequest<'a, 'r> for ApiKey {
         if keys.len() != 1 {
             return Outcome::Forward(());
         }
-
-        let key = keys[0];
-
-        let checker = "0";
-        let value = is_valid(keys[0]);
-        
-        if value == "0" {
-            return Outcome::Forward(());
+        match read_token(keys[0]) {
+            Ok(claim) => Outcome::Success(ApiKey(claim)),
+            Err(e) => Outcome::Forward(())
         }
-
-        return Outcome::Success(ApiKey(value));
     }
 }
