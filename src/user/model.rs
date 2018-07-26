@@ -29,7 +29,7 @@ impl User {
         }
     }
 
-    pub fn byUsernameAndPassword(username_: String, password_: String, connection: &MysqlConnection) -> Option<User> {
+    pub fn by_username_and_password(username_: String, password_: String, connection: &MysqlConnection) -> Option<User> {
         let res = users::table
             .filter(users::name.eq(username_))
             .filter(users::password.eq(password_))

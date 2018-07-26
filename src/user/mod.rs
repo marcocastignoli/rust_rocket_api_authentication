@@ -36,7 +36,7 @@ fn read_error() -> Json<Value> {
 }
 
 #[get("/<id>")]
-fn readOne(id: i32, connection: db::Connection) -> Json<Value> {
+fn read_one(id: i32, connection: db::Connection) -> Json<Value> {
     Json(json!(User::read(id, &connection)))
 }
 
@@ -72,7 +72,7 @@ fn login(credentials: Json<Credentials>, connection: db::Connection) ->  Json<Va
     let username = credentials.username.to_string();
     let password = credentials.password.to_string();
     
-    match User::byUsernameAndPassword(username, password, &connection) {
+    match User::by_username_and_password(username, password, &connection) {
         None => { Json(json!({"success": false})) },
         Some(user) => {
             let claims = Registered {
@@ -92,6 +92,6 @@ fn login(credentials: Json<Credentials>, connection: db::Connection) ->  Json<Va
 
 pub fn mount(rocket: rocket::Rocket) -> rocket::Rocket {
     rocket
-        .mount("/user", routes![read, read_error, readOne, create, update, delete])
+        .mount("/user", routes![read, read_error, read_one, create, update, delete])
         .mount("/auth", routes![login])
 }
