@@ -24,9 +24,7 @@ Get a jwt token for the user marcocastignoli
 ```bash
 curl -X POST \
   http://localhost:8000/auth/login \
-  -H 'cache-control: no-cache' \
   -H 'content-type: application/json' \
-  -H 'postman-token: 8c94f7d5-a1a8-8599-7d20-11138a4d8c7d' \
   -d '{
 	"username": "marcocastignoli",
 	"password": "12345"
@@ -37,9 +35,7 @@ Call a protected route (use the token returned from the /auth/login API)
 ```bash
 curl -X GET \
   http://localhost:8000/user \
-  -H 'authentication: eyJ0eXAiOiJKV1QiLCJraWQiOm51bGwsImFsZyI6IkhTMjU2In0.eyJpc3MiOm51bGwsInN1YiI6Im1hcmNvY2FzdGlnbm9saSIsImF1ZCI6bnVsbCwiZXhwIjpudWxsLCJuYmYiOm51bGwsImlhdCI6bnVsbCwianRpIjpudWxsfQ.fnp0D8Qh1bTFv1zKTVGAxwjtyTCOqKuarRzBQabjiCI' \
-  -H 'cache-control: no-cache' \
-  -H 'postman-token: b10e0928-9316-eb1b-3675-988f6554d236'
+  -H 'authentication: eyJ0eXAiOiJKV1QiLCJraWQiOm51bGwsImFsZyI6IkhTMjU2In0.eyJpc3MiOm51bGwsInN1YiI6Im1hcmNvY2FzdGlnbm9saSIsImF1ZCI6bnVsbCwiZXhwIjpudWxsLCJuYmYiOm51bGwsImlhdCI6bnVsbCwianRpIjpudWxsfQ.fnp0D8Qh1bTFv1zKTVGAxwjtyTCOqKuarRzBQabjiCI'
 ```
 
 ## Thanks
