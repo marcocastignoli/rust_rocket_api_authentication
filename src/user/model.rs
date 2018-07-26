@@ -23,7 +23,7 @@ impl User {
 
     pub fn read(id: i32, connection: &MysqlConnection) -> Vec<User> {
         if id != 0 {
-            users::table.find(id).order(users::id).load::<User>(connection).unwrap()
+            users::table.find(id).load::<User>(connection).unwrap()
         } else {
             users::table.order(users::id).load::<User>(connection).unwrap()
         }
