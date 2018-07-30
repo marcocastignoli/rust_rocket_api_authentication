@@ -2,7 +2,7 @@ pub mod model;
 pub mod schema;
 pub mod auth;
 
-use rocket;
+use rocket::{self, http::Status};
 use rocket_contrib::{Json, Value};
 use self::model::User;
 use db;
@@ -15,13 +15,15 @@ use self::auth::jwt::{
 };
 
 #[post("/", data = "<user>")]
-fn create(user: Json<User>, connection: db::Connection) -> Json<User> {
+fn create(user: Json<User>, connection: db::Connection) -> Result<Json<User>, Status> {
     let insert = User { id: None, ..user.into_inner() };
-    Json(User::create(insert, &connection))
+    User::create(insert, &connection)
+        .map(Json)
+        .map_err(|_| Status::InternalServerError)
 }
 
 #[get("/info")]
-fn info(key: ApiKey, connection: db::Connection) -> Json<Value> {
+fn info(key: ApiKey) -> Json<Value> {
     Json(json!(
         {
             "success": true,
@@ -41,8 +43,10 @@ fn info_error() -> Json<Value> {
 }
 
 #[get("/")]
-fn read(key: ApiKey, connection: db::Connection) -> Json<Value> {
-    Json(json!(User::read(0, &connection)))
+fn read(_key: ApiKey, connection: db::Connection) -> Result<Json<Value>, Status> {
+    User::read(0, &connection)
+        .map(|item| Json(json!(item)))
+        .map_err(|_| Status::NotFound)
 }
 
 #[get("/", rank = 2)]
@@ -56,8 +60,10 @@ fn read_error() -> Json<Value> {
 }
 
 #[get("/<id>")]
-fn read_one(id: i32, connection: db::Connection) -> Json<Value> {
-    Json(json!(User::read(id, &connection)))
+fn read_one(id: i32, connection: db::Connection) -> Result<Json<Value>, Status> {
+    User::read(id, &connection)
+        .map(|item| Json(json!(item)))
+        .map_err(|_| Status::NotFound)
 }
 
 #[put("/<id>", data = "<user>")]
@@ -87,13 +93,15 @@ struct Credentials {
 }
 
 #[post("/login", data = "<credentials>")]
-fn login(credentials: Json<Credentials>, connection: db::Connection) ->  Json<Value> {
+fn login(credentials: Json<Credentials>, connection: db::Connection) ->  Result<Json<Value>, Status> {
     let header: Header = Default::default();
     let username = credentials.username.to_string();
     let password = credentials.password.to_string();
     
     match User::by_username_and_password(username, password, &connection) {
-        None => { Json(json!({"success": false})) },
+        None => {
+            Err(Status::NotFound)
+        },
         Some(user) => {
             let claims = Registered {
                 sub: Some(user.name.into()),
@@ -101,11 +109,9 @@ fn login(credentials: Json<Credentials>, connection: db::Connection) ->  Json<Va
             };
             let token = Token::new(header, claims);
 
-            let message = token.signed(b"secret_key", Sha256::new()).ok().unwrap();
-            Json(json!({
-                "success": true,
-                "token": message
-            }))
+            token.signed(b"secret_key", Sha256::new())
+                .map(|message| Json(json!({ "success": true, "token": message })))
+                .map_err(|_| Status::InternalServerError)
         }
     }
 }
