@@ -12,20 +12,19 @@ pub struct User {
 }
 
 impl User {
-    pub fn create(user: User, connection: &MysqlConnection) -> User {
+    pub fn create(user: User, connection: &MysqlConnection) -> QueryResult<User> {
         diesel::insert_into(users::table)
             .values(&user)
-            .execute(connection)
-            .expect("Error creating new user");
+            .execute(connection)?;
 
-        users::table.order(users::id.desc()).first(connection).unwrap()
+        users::table.order(users::id.desc()).first(connection)
     }
 
-    pub fn read(id: i32, connection: &MysqlConnection) -> Vec<User> {
+    pub fn read(id: i32, connection: &MysqlConnection) -> QueryResult<Vec<User>> {
         if id != 0 {
-            users::table.find(id).load::<User>(connection).unwrap()
+            users::table.find(id).load::<User>(connection)
         } else {
-            users::table.order(users::id).load::<User>(connection).unwrap()
+            users::table.order(users::id).load::<User>(connection)
         }
     }
 
@@ -37,7 +36,7 @@ impl User {
             .first(connection);
         match res {
             Ok(user) => Some(user),
-            Err(err) => {
+            Err(_) => {
                 None
             }
         }

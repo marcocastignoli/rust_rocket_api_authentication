@@ -1,7 +1,7 @@
 pub mod model;
 pub mod schema;
 
-use rocket;
+use rocket::{self, http::Status};
 use rocket_contrib::{Json, Value};
 use self::model::Hero;
 
@@ -9,19 +9,25 @@ use self::model::Hero;
 use db;
 
 #[post("/", data = "<hero>")]
-fn create(hero: Json<Hero>, connection: db::Connection) -> Json<Hero> {
+fn create(hero: Json<Hero>, connection: db::Connection) -> Result<Json<Hero>, Status> {
     let insert = Hero { id: None, ..hero.into_inner() };
-    Json(Hero::create(insert, &connection))
+    Hero::create(insert, &connection)
+        .map(Json)
+        .map_err(|_| Status::InternalServerError)
 }
 
 #[get("/")]
-fn read(connection: db::Connection) -> Json<Value> {
-    Json(json!(Hero::read(0, &connection)))
+fn read(connection: db::Connection) -> Result<Json<Value>, Status> {
+    Hero::read(0, &connection)
+        .map(|item| Json(json!(item)))
+        .map_err(|_| Status::NotFound)
 }
 
 #[get("/<id>")]
-fn readOne(id: i32, connection: db::Connection) -> Json<Value> {
-    Json(json!(Hero::read(id, &connection)))
+fn read_one(id: i32, connection: db::Connection) -> Result<Json<Value>, Status> {
+    Hero::read(id, &connection)
+        .map(|item| Json(json!(item)))
+        .map_err(|_| Status::NotFound)
 }
 
 #[put("/<id>", data = "<hero>")]
@@ -40,5 +46,5 @@ fn delete(id: i32, connection: db::Connection) -> Json<Value> {
 }
 
 pub fn mount(rocket: rocket::Rocket) -> rocket::Rocket {
-    rocket.mount("/hero", routes![read, readOne, create, update, delete])
+    rocket.mount("/hero", routes![read, read_one, create, update, delete])
 }

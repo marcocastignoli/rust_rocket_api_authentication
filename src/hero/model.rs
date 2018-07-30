@@ -14,20 +14,20 @@ pub struct Hero {
 }
 
 impl Hero {
-    pub fn create(hero: Hero, connection: &MysqlConnection) -> Hero {
+    pub fn create(hero: Hero, connection: &MysqlConnection) -> QueryResult<Hero> {
         diesel::insert_into(heroes::table)
             .values(&hero)
             .execute(connection)
             .expect("Error creating new hero");
 
-        heroes::table.order(heroes::id.desc()).first(connection).unwrap()
+        heroes::table.order(heroes::id.desc()).first(connection)
     }
 
-    pub fn read(id: i32, connection: &MysqlConnection) -> Vec<Hero> {
+    pub fn read(id: i32, connection: &MysqlConnection) -> QueryResult<Vec<Hero>> {
         if id != 0 {
-            heroes::table.find(id).order(heroes::id).load::<Hero>(connection).unwrap()
+            heroes::table.find(id).order(heroes::id).load::<Hero>(connection)
         } else {
-            heroes::table.order(heroes::id).load::<Hero>(connection).unwrap()
+            heroes::table.order(heroes::id).load::<Hero>(connection)
         }
     }
 

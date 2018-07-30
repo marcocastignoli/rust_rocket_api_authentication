@@ -1,13 +1,10 @@
-#![feature(globs)]
 use rocket::Outcome;
-use rocket::http::Status;
 use rocket::request::{self, Request, FromRequest};
 
 pub extern crate crypto;
 pub extern crate jwt;
 pub extern crate rustc_serialize;
 
-use std::default::Default;
 use user::auth::crypto::sha2::Sha256;
 use self::jwt::{
     Header,
@@ -19,9 +16,10 @@ use self::jwt::{
 pub struct ApiKey(pub String);
 
 pub fn read_token(key: &str) -> Result<String, String> {
-    let token = Token::<Header, Registered>::parse(key).unwrap();
-    if(token.verify(b"secret_key", Sha256::new())){
-        Ok(token.claims.sub.unwrap())
+    let token = Token::<Header, Registered>::parse(key)
+        .map_err(|_| "Unable to parse key".to_string())?;
+    if token.verify(b"secret_key", Sha256::new()) {
+        token.claims.sub.ok_or("Claims not valid".to_string())
     } else {
         Err("Token not valid".to_string())
     }
@@ -37,7 +35,7 @@ impl<'a, 'r> FromRequest<'a, 'r> for ApiKey {
         }
         match read_token(keys[0]) {
             Ok(claim) => Outcome::Success(ApiKey(claim)),
-            Err(e) => Outcome::Forward(())
+            Err(_) => Outcome::Forward(())
         }
     }
 }
