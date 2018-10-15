@@ -1,0 +1,30 @@
+version: "2"
+services:
+    db1:
+        image: mysql:5.7
+        ports: 
+            - "9909:3306"
+        environment:
+            MYSQL_DATABASE: heroes
+            MYSQL_USER: user
+            MYSQL_PASSWORD: test
+            MYSQL_ROOT_PASSWORD: test 
+        volumes:
+            - persistent_1:/var/lib/mysql
+        networks:
+            - default
+    www:
+        build: .
+        ports: 
+            - "8005:8000"
+        links:
+            - db1
+        networks:
+            - default
+        depends_on:
+            - db1
+        command: bash -c "export DATABASE_URL=mysql://user:test@db1/heroes && diesel migration run &&  cargo run"
+        volumes:
+            - ./:/usr/src/myapp
+volumes:
+    persistent_1:
